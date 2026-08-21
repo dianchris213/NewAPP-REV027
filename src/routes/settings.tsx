@@ -268,6 +268,14 @@ const FS_TYPE_KEY = "tmab-fund-source-type";
 const isTypeFilter = (value: unknown): value is WalletType | "all" =>
   parseStoredTypeFilter(value) === value;
 
+// Transaction categories reuse the same persisted-filter contract as fund
+// sources, so search/filter behaviour is identical on both screens.
+const CAT_QUERY_KEY = "tmab-category-query";
+const CAT_TYPE_KEY = "tmab-category-type";
+const isCategoryTypeFilter = (value: unknown): value is TxType | "all" =>
+  value === "all" || value === "income" || value === "expense";
+
+
 /**
  * Undo snackbar with a visible countdown. Fully keyboard driven: focus lands on
  * Undo, Enter confirms the undo, Escape dismisses, and focus returns to the
