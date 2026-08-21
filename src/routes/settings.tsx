@@ -11,6 +11,8 @@ import {
   WALLET_TYPE_LABEL,
   formatIDR,
   type Wallet,
+  type Category,
+
   type Language,
   type Settings as SettingsState,
   type TxType,
