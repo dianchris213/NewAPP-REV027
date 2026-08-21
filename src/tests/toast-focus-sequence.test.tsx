@@ -76,9 +76,10 @@ describe("Sequential toasts — focus consistency", () => {
       if (!button) break;
       await user.click(button);
       await waitFor(() => expect(button.isConnected).toBe(false));
-
+      const active = document.activeElement as HTMLElement | null;
       expect(active === null || active.isConnected).toBe(true);
       expect(active?.closest("[data-sonner-toast]") ?? null).toBeNull();
+
     }
 
     // Focus landed back on a real, still-mounted control.
