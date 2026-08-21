@@ -45,14 +45,10 @@ describe("Error toast accessibility", () => {
     await user.click(trigger);
     await screen.findByText("Gagal menyimpan data");
 
-    const close = await waitFor(() =>
-      screen.getByRole("button", { name: /close|tutup/i }),
-    );
+    const close = await waitFor(() => screen.getByRole("button", { name: /close|tutup/i }));
     await user.click(close);
 
-    await waitFor(() =>
-      expect(screen.queryByText("Gagal menyimpan data")).not.toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.queryByText("Gagal menyimpan data")).not.toBeInTheDocument());
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
@@ -67,9 +63,7 @@ describe("Error toast accessibility", () => {
     other.focus();
 
     toast.dismiss();
-    await waitFor(() =>
-      expect(screen.queryByText("Gagal menyimpan data")).not.toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.queryByText("Gagal menyimpan data")).not.toBeInTheDocument());
     expect(other).toHaveFocus();
   });
 });
