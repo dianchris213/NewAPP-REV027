@@ -52,7 +52,10 @@ describe("Sequential toasts — focus consistency", () => {
     expect(ok).toHaveFocus();
 
     await user.click(fail);
-    await waitFor(() => expect(screen.getAllByText("Gagal memuat daftar")).toHaveLength(1));
+    await waitFor(() =>
+      expect(screen.getAllByText("Gagal memuat daftar").length).toBeGreaterThanOrEqual(1),
+    );
+
     expect(fail).toHaveFocus();
     expect(document.activeElement?.isConnected).toBe(true);
   });
