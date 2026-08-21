@@ -130,6 +130,14 @@ Suites added in REV021:
 - `src/tests/fund-source-api-error.test.tsx` — API failure: toast, rollback, preserved input, focus recovery, Sentry severity mapping.
 - `src/tests/visual-regression.test.tsx` — layout contract snapshots for the delete dialog and the Undo toast (container classes, element sizes, focus position). Update intentional changes with `bunx vitest run -u`.
 
+Suites added in REV026:
+- `src/tests/fund-source-reload-recovery.test.tsx` — E2E: load failure → "Muat ulang daftar" → successful refetch renders the real list; the empty state is never shown, and focus stays inside the sheet (on the retry button when the reload fails again).
+- `src/tests/toast-a11y.test.tsx` — error toasts never steal focus on appear, expose a keyboard-reachable close button, return focus to the trigger on dismiss/auto-close, and leave focus untouched when the user already moved on.
+
+### Toast accessibility
+`src/lib/toast-a11y.ts` wraps sonner (`toastError` / `toastSuccess` / `toastInfo`): it records the focused element when a toast is raised and restores focus **only** if focus was actually lost (`<body>` or a detached node) after dismiss/auto-close. The toaster (`src/components/ui/sonner.tsx`) ships a close button on every toast and an `Alt+T` hotkey to jump into the toast region on demand — focus is never moved automatically, so keyboard navigation is not disrupted.
+
+
 ### CI workflow
 `.github/workflows/ci.yml` runs on every pull request and on pushes to `main`: install → lint → typecheck → test → build → smoke. Any failing step blocks the merge.
 
