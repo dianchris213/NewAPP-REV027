@@ -73,9 +73,10 @@ describe("Sequential toasts — focus consistency", () => {
     // Close the toasts from the newest one downwards.
     while (closeButtons().length > 0) {
       const button = closeButtons()[0];
+      if (!button) break;
       await user.click(button);
       await waitFor(() => expect(button.isConnected).toBe(false));
-      const active = document.activeElement as HTMLElement | null;
+
       expect(active === null || active.isConnected).toBe(true);
       expect(active?.closest("[data-sonner-toast]") ?? null).toBeNull();
     }
