@@ -43,22 +43,60 @@ export function restoreFocus(opener: HTMLElement | null) {
   opener.focus({ preventScroll: true });
 }
 
+/**
+ * De-duplication: a rapidly repeated event (double click, retry storm, a
+ * failing request answered twice) must not stack identical toasts. Each
+ * kind+message pair gets a stable sonner id, so a repeat *updates* the
+ * existing toast instead of pushing a new node. That also keeps focus stable:
+ * the toast the user may be interacting with is never unmounted and rebuilt,
+ * and the recorded opener is kept from the first raise, so the focus return
+ * target cannot drift to a node that has since been detached.
+ */
+const RECENT_WINDOW_MS = 600;
+
+type LiveToast = { id: string; opener: HTMLElement | null; at: number };
+
+const live = new Map<string, LiveToast>();
+
+const keyOf = (kind: string, message: string, description?: string) =>
+  `${kind}::${message}::${description ?? ""}`;
+
+/** Test-only escape hatch: clears the de-duplication bookkeeping. */
+export function resetToastDedupe() {
+  live.clear();
+}
+
 function withFocusReturn(
   kind: "error" | "success" | "info",
   message: string,
   options: ToastOptions = {},
 ) {
-  const opener = currentFocus();
-  const restore = () => restoreFocus(opener);
+  const key = keyOf(kind, message, options.description);
+  const now = Date.now();
+  const existing = live.get(key);
+  const fresh = existing && now - existing.at < RECENT_WINDOW_MS;
+
+  // Reuse the opener recorded on the first raise while the toast is still
+  // relevant; otherwise capture the currently focused control.
+  const opener = fresh && existing?.opener?.isConnected ? existing.opener : currentFocus();
+  const id = existing?.id ?? key;
+  live.set(key, { id, opener, at: now });
+
+  const settle = () => {
+    if (live.get(key)?.id === id) live.delete(key);
+    restoreFocus(opener);
+  };
+
   return toast[kind](message, {
     ...options,
+    id,
     onDismiss: () => {
       options.onDismiss?.();
-      restore();
+      settle();
     },
     onAutoClose: () => {
       options.onAutoClose?.();
-      restore();
+      settle();
     },
   });
 }
@@ -71,3 +109,4 @@ export const toastSuccess = (message: string, options?: ToastOptions) =>
 
 export const toastInfo = (message: string, options?: ToastOptions) =>
   withFocusReturn("info", message, options);
+
