@@ -11,6 +11,8 @@ import {
   WALLET_TYPE_LABEL,
   formatIDR,
   type Wallet,
+  type Category,
+
   type Language,
   type Settings as SettingsState,
   type TxType,
@@ -265,6 +267,14 @@ const FS_TYPE_KEY = "tmab-fund-source-type";
  */
 const isTypeFilter = (value: unknown): value is WalletType | "all" =>
   parseStoredTypeFilter(value) === value;
+
+// Transaction categories reuse the same persisted-filter contract as fund
+// sources, so search/filter behaviour is identical on both screens.
+const CAT_QUERY_KEY = "tmab-category-query";
+const CAT_TYPE_KEY = "tmab-category-type";
+const isCategoryTypeFilter = (value: unknown): value is TxType | "all" =>
+  value === "all" || value === "income" || value === "expense";
+
 
 /**
  * Undo snackbar with a visible countdown. Fully keyboard driven: focus lands on
@@ -1017,15 +1027,28 @@ function CategorySheet({ onClose }: { onClose: () => void }) {
   const [editingName, setEditingName] = useState("");
   const [rowError, setRowError] = useState<{ id: string; message: string } | null>(null);
   const [status, setStatus] = useState("");
-  const [query, setQuery] = useState("");
+  // Search and the list's type filter are independent of the income/expense
+  // tabs above: the tabs choose the type of the category being *created*.
+  // Coupling them made search look broken — typing the name of an expense
+  // category while the income tab was active returned nothing.
+  const [query, setQuery, resetQuery] = usePersistentState<string>(CAT_QUERY_KEY, "", isString);
+  const [typeFilter, setTypeFilter, resetTypeFilter] = usePersistentState<TxType | "all">(
+    CAT_TYPE_KEY,
+    "all",
+    isCategoryTypeFilter,
+  );
   const [sort, setSort] = useState<CategorySort>("name-asc");
 
+  const filtersDirty = !!query.trim() || typeFilter !== "all";
+
+  const resetFilters = useCallback(() => {
+    resetQuery();
+    resetTypeFilter();
+  }, [resetQuery, resetTypeFilter]);
+
   const list = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const rows = categories.filter(
-      (c) => c.type === type && (!q || c.name.toLowerCase().includes(q)),
-    );
-    return rows.sort((a, b) => {
+    const rows = filterWallets(categories, { query, type: typeFilter }) as Category[];
+    return [...rows].sort((a, b) => {
       if (sort === "name-desc") return b.name.localeCompare(a.name);
       if (sort === "most-used") {
         const diff = categoryUsage(b.id) - categoryUsage(a.id);
@@ -1033,7 +1056,10 @@ function CategorySheet({ onClose }: { onClose: () => void }) {
       }
       return a.name.localeCompare(b.name);
     });
-  }, [categories, categoryUsage, query, sort, type]);
+  }, [categories, categoryUsage, query, sort, typeFilter]);
+
+  const hiddenCount = categories.length - list.length;
+
 
   const startRename = (id: string, current: string) => {
     setEditingId(id);
