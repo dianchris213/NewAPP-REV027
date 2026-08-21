@@ -133,9 +133,15 @@ Suites added in REV021:
 Suites added in REV026:
 - `src/tests/fund-source-reload-recovery.test.tsx` — E2E: load failure → "Muat ulang daftar" → successful refetch renders the real list; the empty state is never shown, and focus stays inside the sheet (on the retry button when the reload fails again).
 - `src/tests/toast-a11y.test.tsx` — error toasts never steal focus on appear, expose a keyboard-reachable close button, return focus to the trigger on dismiss/auto-close, and leave focus untouched when the user already moved on.
+- `src/tests/toast-focus-sequence.test.tsx` — regression for several error/success toasts raised in sequence: focus stays on the triggering control, is never parked on a removed toast node while stacked toasts are closed one by one, is not stolen when the user moved elsewhere, and axe reports no violations with multiple toasts visible.
+- `src/tests/toast-close-keyboard.test.tsx` — E2E keyboard: the toast close button is focusable (no positive `tabindex`) and closes with Enter or Space, focus returns to the trigger, Tab continues normally afterwards; `Alt+T` reveals the toast region on demand, focus returns correctly after closing, and pressing it with no toast visible changes nothing.
+
+### Continuous integration
+`.github/workflows/ci.yml` runs on every pull request (and pushes to `main`): install → lint → typecheck → unit tests → E2E flow suites → axe-core accessibility suites → production build. Each layer is a separate step, so a failing PR shows immediately whether the regression is functional or accessibility-related.
 
 ### Toast accessibility
 `src/lib/toast-a11y.ts` wraps sonner (`toastError` / `toastSuccess` / `toastInfo`): it records the focused element when a toast is raised and restores focus **only** if focus was actually lost (`<body>` or a detached node) after dismiss/auto-close. The toaster (`src/components/ui/sonner.tsx`) ships a close button on every toast and an `Alt+T` hotkey to jump into the toast region on demand — focus is never moved automatically, so keyboard navigation is not disrupted.
+
 
 
 ### CI workflow
