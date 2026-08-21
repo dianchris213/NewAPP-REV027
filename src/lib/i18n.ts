@@ -93,6 +93,7 @@ export type Dict = {
   fundSourceLoadFailed: string;
   fundSourceLoadFailedHint: string;
   retryLoadFundSources: string;
+  fundSourceReloaded: string;
   fundSourceListLabel: string;
   fundSourceRowLabel: string;
   undoIn: string;
@@ -200,6 +201,7 @@ const dictionaries: Record<Language, Dict> = {
     fundSourceLoadFailedHint:
       "Data Anda tidak hilang. Periksa koneksi lalu coba muat ulang daftar.",
     retryLoadFundSources: "Muat ulang daftar",
+    fundSourceReloaded: "Daftar sumber dana berhasil dimuat ulang.",
     fundSourceListLabel: "Daftar sumber dana",
     fundSourceRowLabel: "Sumber dana",
     undoIn: "Urungkan dalam",
@@ -303,6 +305,7 @@ const dictionaries: Record<Language, Dict> = {
     fundSourceLoadFailed: "Could not load the fund source list.",
     fundSourceLoadFailedHint: "Your data is safe. Check your connection and reload the list.",
     retryLoadFundSources: "Reload list",
+    fundSourceReloaded: "Fund source list reloaded.",
     fundSourceListLabel: "Fund source list",
     fundSourceRowLabel: "Fund source",
     undoIn: "Undo in",

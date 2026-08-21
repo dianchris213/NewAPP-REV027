@@ -561,6 +561,28 @@ export function FundSourceSheet({ onClose }: { onClose: () => void }) {
     setConfirmId(id);
   }, []);
 
+  // Reload ("Muat ulang daftar"): re-runs the fetch, announces the outcome and
+  // keeps keyboard focus inside the sheet — the retry button unmounts on
+  // success, which would otherwise drop focus to <body>.
+  const loadErrorRef = useRef(walletLoadError);
+  loadErrorRef.current = walletLoadError;
+  const reloadRef = useRef<HTMLButtonElement | null>(null);
+
+  const handleReload = useCallback(() => {
+    reloadWallets();
+    window.setTimeout(() => {
+      if (loadErrorRef.current) {
+        // Still failing: the load-error effect re-announces it; keep focus on
+        // the retry control so the user can try again immediately.
+        reloadRef.current?.focus({ preventScroll: true });
+        return;
+      }
+      setStatus(copy.fundSourceReloaded);
+      toastSuccess(copy.fundSourceReloaded);
+      nameRef.current?.focus({ preventScroll: true });
+    }, 0);
+  }, [reloadWallets, copy.fundSourceReloaded]);
+
   // A failed load must be announced loudly (toast + inline alert), once per
   // failure, and must never be confused with "no fund sources yet".
   useEffect(() => {
@@ -793,8 +815,9 @@ export function FundSourceSheet({ onClose }: { onClose: () => void }) {
             </span>
             <button
               type="button"
+              ref={reloadRef}
               data-testid="fund-source-reload"
-              onClick={reloadWallets}
+              onClick={handleReload}
               className="mt-1 rounded-full border border-outline-variant/30 bg-surface-container px-4 py-2 text-[12px] font-bold text-on-surface focus-visible:ring-2 focus-visible:ring-primary/60"
             >
               {copy.retryLoadFundSources}
