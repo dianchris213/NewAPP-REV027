@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { toastError, toastSuccess } from "@/lib/toast-a11y";
 import { AppShell, TopBar } from "@/components/AppShell";
 import { Icon } from "@/components/Icon";
 import { ListSkeleton } from "@/components/Skeleton";
@@ -474,8 +475,8 @@ export function FundSourceSheet({ onClose }: { onClose: () => void }) {
 
   const announce = (message: string, ok: boolean) => {
     setStatus(message);
-    if (ok) toast.success(message);
-    else toast.error(message);
+    if (ok) toastSuccess(message);
+    else toastError(message);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -495,7 +496,7 @@ export function FundSourceSheet({ onClose }: { onClose: () => void }) {
       if (result.reason === "api") {
         setError(copy.fundSourceSaveFailed);
         setStatus(copy.fundSourceSaveFailed);
-        toast.error(copy.fundSourceSaveFailed, {
+        toastError(copy.fundSourceSaveFailed, {
           description: copy.fundSourceSaveFailedHint,
         });
       } else {
@@ -554,7 +555,7 @@ export function FundSourceSheet({ onClose }: { onClose: () => void }) {
       const message = inUseMessageRef.current;
       setRowError({ id, message });
       setStatus(message);
-      toast.error(message);
+      toastError(message);
       return;
     }
     setConfirmId(id);
@@ -564,7 +565,7 @@ export function FundSourceSheet({ onClose }: { onClose: () => void }) {
   // failure, and must never be confused with "no fund sources yet".
   useEffect(() => {
     if (!hydrated || !walletLoadError) return;
-    toast.error(copy.fundSourceLoadFailed, { description: copy.fundSourceLoadFailedHint });
+    toastError(copy.fundSourceLoadFailed, { description: copy.fundSourceLoadFailedHint });
     setStatus(copy.fundSourceLoadFailed);
   }, [hydrated, walletLoadError, copy.fundSourceLoadFailed, copy.fundSourceLoadFailedHint]);
 
@@ -594,8 +595,8 @@ export function FundSourceSheet({ onClose }: { onClose: () => void }) {
     if (!target) return;
     const restored = restoreWallet(target);
     setStatus(restored ? copy.fundSourceRestored : copy.fundSourceRestoreFailed);
-    if (restored) toast.success(copy.fundSourceRestored, { description: target.name });
-    else toast.error(copy.fundSourceRestoreFailed);
+    if (restored) toastSuccess(copy.fundSourceRestored, { description: target.name });
+    else toastError(copy.fundSourceRestoreFailed);
   };
 
   return (
@@ -1019,8 +1020,8 @@ function CategorySheet({ onClose }: { onClose: () => void }) {
 
   const announce = (message: string, ok: boolean) => {
     setStatus(message);
-    if (ok) toast.success(message);
-    else toast.error(message);
+    if (ok) toastSuccess(message);
+    else toastError(message);
   };
 
   const commitRename = (id: string) => {
